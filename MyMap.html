@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control Territorial y Secciones - Nuevo León</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+    body { margin: 0; display: flex; flex-direction: column; height: 100vh; background: #f3f6fa; }
+    
+    .toolbar {
+      background: #173b5c; color: #fff; padding: 10px 16px;
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 1000;
+    }
+    .toolbar h1 { margin: 0; font-size: 16px; margin-right: 10px; }
+    .filter-group { display: flex; flex-direction: column; gap: 3px; }
+    .filter-group label { font-size: 11px; color: #cbd8e5; font-weight: bold; }
+    select, input[type="text"] {
+      padding: 6px 9px; border-radius: 5px; border: 1px solid #cbd8e5;
+      font-size: 12px; min-width: 155px; background: #fff; color: #20364b;
+    }
+    .btn {
+      border: none; padding: 7px 11px; border-radius: 5px; cursor: pointer;
+      font-weight: bold; font-size: 12px; margin-top: 14px; transition: 0.15s;
+    }
+    .btn-primary { background: #1676c5; color: white; }
+    .btn-primary:hover { background: #105b98; }
+    .btn-upload { background: #20a45b; color: white; }
+    .btn-upload:hover { background: #188046; }
+
+    #map { flex: 1; width: 100%; min-height: 500px; z-index: 1; background: #dce4ec; }
+    #estadoCarga { font-size: 12px; color: #a7f3d0; font-weight: bold; margin-top: 14px; }
+
+    .popup-form { display: flex; flex-direction: column; gap: 8px; min-width: 230px; }
+    .popup-form h3 { margin: 0; font-size: 14px; color: #173b5c; border-bottom: 1px solid #e6edf4; padding-bottom: 4px; }
+    .popup-form textarea {
+      width: 100%; height: 70px; padding: 6px; border: 1px solid #cbd8e5;
+      border-radius: 4px; font-size: 12px; resize: vertical;
+    }
+    .popup-actions { display: flex; gap: 6px; }
+    .btn-azul { background: #1676c5; color: #fff; border: none; padding: 7px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; }
+    .btn-blanco { background: #eef4fa; color: #173b5c; border: 1px solid #cbd8e5; padding: 7px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <h1>🗺️ Visor Territorial NL</h1>
+    
+    <div class="filter-group">
+      <label>1. Municipio (Nuevo León)</label>
+      <select id="filtroMunicipio">
+        <option value="TODOS" selected>-- Todos los Municipios --</option>
+        <option value="Monterrey">Monterrey</option>
+        <option value="Guadalupe">Guadalupe</option>
+        <option value="Apodaca">Apodaca</option>
+        <option value="San Nicolás de los Garza">San Nicolás de los Garza</option>
+        <option value="General Escobedo">General Escobedo</option>
+        <option value="Santa Catarina">Santa Catarina</option>
+        <option value="Juárez">Juárez</option>
+        <option value="García">García</option>
+        <option value="San Pedro Garza García">San Pedro Garza García</option>
+        <option value="Cadereyta Jiménez">Cadereyta Jiménez</option>
+        <option value="Pesquería">Pesquería</option>
+        <option value="Santiago">Santiago</option>
+        <option value="Salinas Victoria">Salinas Victoria</option>
+        <option value="El Carmen">El Carmen</option>
+        <option value="Ciénega de Flores">Ciénega de Flores</option>
+        <option value="General Zuazua">General Zuazua</option>
+        <option value="Abasolo">Abasolo</option>
+        <option value="Agualeguas">Agualeguas</option>
+        <option value="Los Aldamas">Los Aldamas</option>
+        <option value="Allende">Allende</option>
+        <option value="Anáhuac">Anáhuac</option>
+        <option value="Aramberri">Aramberri</option>
+        <option value="Bustamante">Bustamante</option>
+        <option value="Cerralvo">Cerralvo</option>
+        <option value="China">China</option>
+        <option value="Doctor Arroyo">Doctor Arroyo</option>
+        <option value="Doctor Coss">Doctor Coss</option>
+        <option value="Doctor González">Doctor González</option>
+        <option value="Galeana">Galeana</option>
+        <option value="General Bravo">General Bravo</option>
+        <option value="General Terán">General Terán</option>
+        <option value="General Treviño">General Treviño</option>
+        <option value="General Zaragoza">General Zaragoza</option>
+        <option value="Los Herreras">Los Herreras</option>
+        <option value="Hidalgo">Hidalgo</option>
+        <option value="Higueras">Higueras</option>
+        <option value="Hualahuises">Hualahuises</option>
+        <option value="Iturbide">Iturbide</option>
+        <option value="Lampazos de Naranjo">Lampazos de Naranjo</option>
+        <option value="Linares">Linares</option>
+        <option value="Marín">Marín</option>
+        <option value="Melchor Ocampo">Melchor Ocampo</option>
+        <option value="Mier y Noriega">Mier y Noriega</option>
+        <option value="Mina">Mina</option>
+        <option value="Montemorelos">Montemorelos</option>
+        <option value="Parás">Parás</option>
+        <option value="Los Ramones">Los Ramones</option>
+        <option value="Rayones">Rayones</option>
+        <option value="Sabinas Hidalgo">Sabinas Hidalgo</option>
+        <option value="Vallecillo">Vallecillo</option>
+        <option value="Villaldama">Villaldama</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>2. Estatus de Recorrido</label>
+      <select id="filtroEstatus">
+        <option value="TODOS">Todas (Azul y Blanco)</option>
+        <option value="RECORRIDA">🔵 Recorridas (Azul)</option>
+        <option value="PENDIENTE">⚪ No Recorridas (Blanco)</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>3. Buscar N° Sección</label>
+      <input type="text" id="buscadorSeccion" placeholder="Ej. 641, 1024...">
+    </div>
+
+    <button class="btn btn-primary" onclick="limpiarFiltros()">Mostrar Todo</button>
+
+    <div class="filter-group">
+      <label>4. Capa Oficial INE</label>
+      <input type="file" id="inputGeoJSON" accept=".geojson,.json" style="display:none;" />
+      <button class="btn btn-upload" style="margin-top:0;" onclick="document.getElementById('inputGeoJSON').click()">📂 Cargar Secciones (.geojson)</button>
+    </div>
+
+    <span id="estadoCarga">Iniciando...</span>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    window.onerror = function(mensaje, fuente, linea) {
+      const est = document.getElementById('estadoCarga');
+      if (est) {
+        est.textContent = '❌ Error línea ' + linea + ': ' + mensaje;
+        est.style.color = '#fca5a5';
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', function() {
+      const estado = document.getElementById('estadoCarga');
+
+      if (typeof L === 'undefined') {
+        estado.textContent = '❌ Error: Sin conexión a Leaflet. Revisa tu internet o abre con Live Server.';
+        estado.style.color = '#fca5a5';
+        return;
+      }
+
+      const clavesINE = {
+        "1": "Abasolo", "2": "Agualeguas", "3": "Los Aldamas", "4": "Allende",
+        "5": "Anáhuac", "6": "Apodaca", "7": "Aramberri", "8": "Bustamante",
+        "9": "Cadereyta Jiménez", "10": "El Carmen", "11": "Cerralvo", "12": "Ciénega de Flores",
+        "13": "China", "14": "Doctor Arroyo", "15": "Doctor Coss", "16": "Doctor González",
+        "17": "Galeana", "18": "García", "19": "San Pedro Garza García", "20": "General Bravo",
+        "21": "General Escobedo", "22": "General Terán", "23": "General Treviño", "24": "General Zaragoza",
+        "25": "General Zuazua", "26": "Guadalupe", "27": "Los Herreras", "28": "Higueras",
+        "29": "Hualahuises", "30": "Iturbide", "31": "Juárez", "32": "Lampazos de Naranjo",
+        "33": "Linares", "34": "Marín", "35": "Melchor Ocampo", "36": "Mier y Noriega",
+        "37": "Mina", "38": "Montemorelos", "39": "Monterrey", "40": "Parás",
+        "41": "Pesquería", "42": "Los Ramones", "43": "Rayones", "44": "Sabinas Hidalgo",
+        "45": "Salinas Victoria", "46": "San Nicolás de los Garza", "47": "Hidalgo",
+        "48": "Santa Catarina", "49": "Santiago", "50": "Vallecillo", "51": "Villaldama"
+      };
+
+      const centrosMunicipios = {
+        "Monterrey": [25.6866, -100.3161],
+        "Guadalupe": [25.6768, -100.2565],
+        "Apodaca": [25.7815, -100.1886],
+        "San Nicolás de los Garza": [25.7417, -100.3022],
+        "General Escobedo": [25.7975, -100.3267],
+        "Santa Catarina": [25.6733, -100.4581],
+        "Juárez": [25.6472, -100.0958],
+        "García": [25.8114, -100.5961],
+        "San Pedro Garza García": [25.6573, -100.4027]
+      };
+
+      const mapa = L.map('map', { preferCanvas: true }).setView([25.6800, -100.2800], 12);
+      
+      const capaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(mapa);
+
+      const capaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: '&copy; Esri'
+      });
+
+      L.control.layers({ "Mapa Calles": capaCalles, "Vista Satélite": capaSatelite }).addTo(mapa);
+
+      let datosGuardados = JSON.parse(localStorage.getItem('avanceElectoralNL') || '{}');
+
+      let geojsonSecciones = {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "SECCION": "1024", "MUNICIPIO": "39" },
+            "geometry": { "type": "Polygon", "coordinates": [[[-100.3200, 25.6890], [-100.3120, 25.6890], [-100.3120, 25.6830], [-100.3200, 25.6830], [-100.3200, 25.6890]]] }
+          },
+          {
+            "type": "Feature",
+            "properties": { "SECCION": "641", "MUNICIPIO": "26" },
+            "geometry": { "type": "Polygon", "coordinates": [[[-100.2415, 25.6720], [-100.2350, 25.6720], [-100.2350, 25.6675], [-100.2415, 25.6675], [-100.2415, 25.6720]]] }
+          }
+        ]
+      };
+
+      let capaGeoJSON = null;
+
+      function obtenerNumeroSeccion(props) {
+        if (!props) return 'S/N';
+        return String(props.SECCION || props.seccion || props.Seccion || props.CVE_SECC || 'S/N');
+      }
+
+      function obtenerMunicipio(props) {
+        if (!props) return '';
+        const val = String(props.MUNICIPIO || props.municipio || props.NOM_MUN || '').trim();
+        return clavesINE[val] || val;
+      }
+
+      function estiloSeccion(feature) {
+        const idSec = obtenerNumeroSeccion(feature.properties);
+        const info = datosGuardados[idSec] || { recorrida: false };
+
+        return {
+          fillColor: info.recorrida ? '#1676c5' : '#ffffff',
+          weight: 1.5,
+          opacity: 1,
+          color: '#173b5c',
+          fillOpacity: info.recorrida ? 0.65 : 0.45
+        };
+      }
+
+      function renderizarMapa(enfocar) {
+        if (capaGeoJSON) mapa.removeLayer(capaGeoJSON);
+
+        const munSel = document.getElementById('filtroMunicipio').value;
+        const estSel = document.getElementById('filtroEstatus').value;
+        const busqSec = document.getElementById('buscadorSeccion').value.trim();
+
+        if (enfocar && munSel !== 'TODOS' && centrosMunicipios[munSel]) {
+          mapa.setView(centrosMunicipios[munSel], 13);
+        }
+
+        let contadorVisibles = 0;
+
+        capaGeoJSON = L.geoJSON(geojsonSecciones, {
+          style: estiloSeccion,
+          filter: function(feature) {
+            const p = feature.properties;
+            const idSec = obtenerNumeroSeccion(p);
+            const munPoligono = obtenerMunicipio(p);
+            const info = datosGuardados[idSec] || { recorrida: false };
+
+            if (munSel !== 'TODOS' && munPoligono.toLowerCase() !== munSel.toLowerCase()) return false;
+            if (estSel === 'RECORRIDA' && !info.recorrida) return false;
+            if (estSel === 'PENDIENTE' && info.recorrida) return false;
+            if (busqSec !== '' && !idSec.includes(busqSec)) return false;
+
+            contadorVisibles++;
+            return true;
+          },
+          onEachFeature: function(feature, layer) {
+            const p = feature.properties;
+            const idSec = obtenerNumeroSeccion(p);
+            const munPoligono = obtenerMunicipio(p) || 'Sin especificar';
+            const info = datosGuardados[idSec] || { recorrida: false, nota: '' };
+
+            layer.bindTooltip('Sección ' + idSec, { sticky: true });
+
+            const contenidoPopup = document.createElement('div');
+            contenidoPopup.className = 'popup-form';
+            contenidoPopup.innerHTML = 
+              '<h3>Sección ' + idSec + '</h3>' +
+              '<small style="color:#64788c;">Municipio: ' + munPoligono + '</small>' +
+              '<label style="font-size:11px; font-weight:bold;">Cuadro de texto / Notas:</label>' +
+              '<textarea id="nota-' + idSec + '" placeholder="Escribe aquí observaciones, avances o notas...">' + info.nota + '</textarea>' +
+              '<div class="popup-actions">' +
+                '<button class="btn-azul" id="btn-rec-' + idSec + '">🔵 Recorrida</button>' +
+                '<button class="btn-blanco" id="btn-pen-' + idSec + '">⚪ No Recorrida</button>' +
+              '</div>';
+
+            layer.bindPopup(contenidoPopup);
+
+            layer.on('popupopen', function() {
+              document.getElementById('btn-rec-' + idSec).onclick = function() { guardarCambio(idSec, true); };
+              document.getElementById('btn-pen-' + idSec).onclick = function() { guardarCambio(idSec, false); };
+            });
+          }
+        }).addTo(mapa);
+
+        estado.textContent = '✅ Mapa listo · Mostrando ' + contadorVisibles + ' secciones';
+
+        if (capaGeoJSON.getBounds().isValid()) {
+          mapa.fitBounds(capaGeoJSON.getBounds(), { padding: [20, 20] });
+        }
+      }
+
+      function guardarCambio(seccionId, esRecorrida) {
+        const textoNota = document.getElementById('nota-' + seccionId).value;
+        datosGuardados[seccionId] = {
+          recorrida: esRecorrida,
+          nota: textoNota
+        };
+        localStorage.setItem('avanceElectoralNL', JSON.stringify(datosGuardados));
+        mapa.closePopup();
+        renderizarMapa(false);
+      }
+
+      window.limpiarFiltros = function() {
+        document.getElementById('filtroMunicipio').value = 'TODOS';
+        document.getElementById('filtroEstatus').value = 'TODOS';
+        document.getElementById('buscadorSeccion').value = '';
+        renderizarMapa(false);
+      };
+
+      document.getElementById('inputGeoJSON').addEventListener('change', function(e) {
+        const archivo = e.target.files[0];
+        if (!archivo) return;
+        estado.textContent = '⏳ Leyendo archivo...';
+        
+        const lector = new FileReader();
+        lector.onload = function(evento) {
+          try {
+            const data = JSON.parse(evento.target.result);
+            geojsonSecciones = data;
+            renderizarMapa(false);
+          } catch (err) {
+            estado.textContent = '❌ Error al leer archivo: ' + err.message;
+            estado.style.color = '#fca5a5';
+          }
+        };
+        lector.readAsText(archivo);
+      });
+
+      document.getElementById('filtroMunicipio').addEventListener('change', function() { renderizarMapa(true); });
+      document.getElementById('filtroEstatus').addEventListener('change', function() { renderizarMapa(false); });
+      document.getElementById('buscadorSeccion').addEventListener('input', function() { renderizarMapa(false); });
+
+      renderizarMapa(false);
+    });
+  </script>
+</body>
+</html>
